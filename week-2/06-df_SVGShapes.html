@@ -1,0 +1,118 @@
+<!-- INFO-616 / week 2 / 04 / assignment / extra -->
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>SVG Shapes</title>
+        <script type="text/javascript" src= "https://d3js.org/d3.v7.min.js"></script>
+        <style type="text/css"></style>
+    </head>
+    <body>
+
+        <script type="text/javascript">
+
+            // create SVG element
+            const svgCanvas = d3.select("body")
+                            .append("svg")
+                            .attr("width", 750) 
+                            .attr("height", 750)
+                            .style("background-color", "white");
+
+
+            // create shapes, add to SVG
+            // make a face
+            // start with bottom layer and built up
+            // *** had to use var instead of const because using same shapes multiple times ***
+
+            // circle - face shape
+            var circle = svgCanvas.append("circle")  
+                .attr("cx", 250)
+                .attr("cy", 250)
+                .attr("r", 225)
+                .attr("fill", "red");
+
+            // line: left eyebrow
+            // requires: x1, y1. x2, y2 (coordinates for first and second points), stroke, stroke width
+            var line = svgCanvas.append("line") 
+                .attr("x1", 125) 
+                .attr("y1", 150)
+                .attr("x2", 225)
+                .attr("y2", 175)
+                .attr("stroke", "black")
+                .attr("stroke-width", "15px");    
+
+            // line: right eyebrow
+            var line = svgCanvas.append("line") 
+                .attr("x1", 300) 
+                .attr("y1", 175)
+                .attr("x2", 400)
+                .attr("y2", 150)
+                .attr("stroke", "black")
+                .attr("stroke-width", "15px"); 
+
+            // circle - left eye
+            var circle = svgCanvas.append("circle")  
+                .attr("cx", 180)
+                .attr("cy", 225)
+                .attr("r", 40)
+                .attr("fill", "white");
+
+            // circle - left pupil
+            var circle = svgCanvas.append("circle")  
+                .attr("cx", 200)
+                .attr("cy", 235)
+                .attr("r", 15)
+                .attr("fill", "black");    
+
+            // circle - right eye
+            var circle = svgCanvas.append("circle")  
+                .attr("cx", 335)
+                .attr("cy", 225)
+                .attr("r", 40)
+                .attr("fill", "white");    
+
+            // circle - right pupil
+            var circle = svgCanvas.append("circle")  
+                .attr("cx", 355)
+                .attr("cy", 235)
+                .attr("r", 15)
+                .attr("fill", "black"); 
+
+             // ellipse - mouth
+             // needs rx, ry values
+             var ellipse = svgCanvas.append("ellipse")  
+                .attr("cx", 275)
+                .attr("cy", 350)
+                .attr("rx", 100)
+                .attr("ry", 75)
+                .attr("fill", "black")
+                // .attr("transform", "rotate(45)") rotates shape around coordinate system
+                // .attr("transform", "rotate(a,x,y)") provide x,y for shape to rotate around
+                .attr("transform", "rotate(15, 175, 300)"); 
+
+            // rectangle - for text box
+            var rect = svgCanvas.append("rect") 
+                .attr("x", 350)
+                .attr("y", 300)
+                .attr("width", 400)
+                .attr("height", 125)
+                .attr("fill", "gold")
+                .attr("transform", "rotate(-5, 325, 500)"); 
+            
+            // text
+            const text = svgCanvas.append("text") 
+                .attr("x", 375)
+                .attr("y", 370)
+                //
+                .text("REMEMBER THE SEMICOLON")
+                .attr("font-family", "helvetica")
+                .attr("font-weight", "bolder")
+                .attr("font-size", "24px")
+                .attr("fill", "black")
+                .attr("transform", "rotate(-5, 325, 500)"); 
+   
+            
+        </script>
+    </body>
+</html>
