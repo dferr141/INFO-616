@@ -11,9 +11,9 @@ The scatterplot utilizes a sample dataset.
 
 Screenshot of scatterplot here:
 
-![scatterplot Assignment](week-2/df-scatterplot.png "Week 2: Scatterplot")
+![scatterplot Assignment](/week-2/df-scatterplot.png "Week 2: Scatterplot")
 
 
 Screenshot of SVG art here:
 
-![SVG Art Assignment](week-2/df-svgs.png "Week 2: SVG Art")
+![SVG Art Assignment](/week-2/df-svgs.png "Week 2: SVG Art")
