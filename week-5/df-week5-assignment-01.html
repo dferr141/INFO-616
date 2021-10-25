@@ -1,0 +1,308 @@
+<!-- week 5 assignment -->
+<!-- wine data - using color purposefully to color in wine varieties -->
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Red Wine Varieties</title>
+        <script src= "https://d3js.org/d3.v7.min.js"></script>
+        <style type="text/css"> 
+        	svg{
+            width: 1500px;
+            height: 5000px;
+            padding-top: 25px;
+          }
+          .title {
+            font-size: 36px;
+            font-weight: lighter;
+            font-family: Arial, Helvetica, sans-serif;
+            text-align: left;
+          }
+          .labels{
+            font-size: 12px;
+            font-weight: bold;
+            font-family: Arial, Helvetica, sans-serif;
+          }
+          .sublabels{
+            font-size: 9px;
+            font-weight: normal;
+            font-family: Arial, Helvetica, sans-serif;
+          }
+        </style>
+
+    </head>
+    <body>
+         <svg>
+         </svg> 
+
+
+        <script type="text/javascript">
+
+        // data - red wine - I generated CSV based on content in this book:
+        // title: Red Wine: The Comprehensive Guide to the 50 Essential Varieties & Styles
+        // authors: Kevin Zraly, Mike DeSimone, Jeff Jenssen
+        d3.csv("red_wine_data.csv").then(dataset => {  
+
+        // format the data 
+        // wine is wine name
+        // color is on a numeric scale 1-5
+        // colors: inky purple / red violet / light red / ruby / black cherry
+        dataset.forEach(function(d){
+            d.wine = d.wine;
+            d.color = +d.color;
+        });
+
+        // color with scales, d3 min and max 
+        const maxData = d3.max(dataset, d=>d.color);
+        const minData = d3.min(dataset, d=>d.color);
+        // multiple segments - define 3 colors for scale
+        const  myColor = d3.scaleLinear()
+        				   .domain([1,3,5])
+                           // set range on left scale (inky purple); mid scale (light red); right scale (black cherry)
+                           .range(['#cd0078', '#e50005', '#560920']);
+
+        // draw with d3.line()                 
+        const wineGenerator = d3.line();
+
+        // wine glass svg from nounproject
+        // https://thenounproject.com/search/?q=wine+glass&i=753678
+        const wine  = [d="M73.6,35.9c0-0.4-0.1-1-0.2-2c0-0.1,0-0.1,0-0.2c-1.1-6.5-5.2-23.9-5.7-26.1c-0.2-0.7-0.7-1.1-1.4-1.1H33.8  c-0.7,0-1.3,0.5-1.4,1.1c-0.5,2.3-4.6,19.6-5.7,26.1c0,0.1,0,0.1,0,0.2c-0.2,0.9-0.2,1.6-0.2,2c0,12.5,9.8,22.8,22.1,23.6v31h-8.6  c-0.8,0-1.5,0.7-1.5,1.5c0,0.8,0.7,1.5,1.5,1.5h20.2c0.8,0,1.5-0.7,1.5-1.5c0-0.8-0.7-1.5-1.5-1.5h-8.6v-31  C63.8,58.7,73.6,48.5,73.6,35.9z M34.9,9.5h30.1c1.7,7.4,4.1,17.9,5.1,23.2H29.8C30.9,27.4,33.2,16.9,34.9,9.5z"];
+        
+
+        const pathString = wineGenerator(wine);
+        const perRow = 5;
+        const size = 250;
+        const sizeY = 450;
+
+        const svg = d3.select("svg");
+
+        // making groups
+        const g = svg.selectAll("g")
+                      .data(dataset, d=>d)
+                      .enter()
+                      .append("g")
+                      .attr("transform", (d,i)=>{
+                        const x = (i % perRow + 1) * size;
+                        const y = (Math.floor(i/perRow)+.20) * sizeY;
+                        return 'translate(' + [x,y] + ')';})
+                      // .attr("fill", d=> myColor(d.height))
+                      // .attr("stroke", "#00441b")
+                      // .attr("stroke-width", "1px");
+                      // see what happens if you apply ^^ here instead of below
+
+        g.append("path")
+            .attr("d", wine)
+            .attr("fill", d=> myColor(d.color));
+            //.attr("stroke", "#08306b")
+            //.attr("stroke-width", ".5px");
+
+        // WINE
+        // create labels for wine name
+        g.append("text")
+            // x coordinate
+            .attr("x", size/15)
+            // y coordinate
+            .attr("y", size -150)
+            // horizontal text alignment 
+            .attr("text-anchor", "middle")
+            // y coordinate offset
+            .attr("dy", "15px")
+            // x coordinate offset
+            .attr("dx", "35px")
+            .attr("class","labels")
+            .attr("fill", d=> myColor(d.color))
+            // text 
+            .text(d=>d.wine);
+
+        // ACIDITY    
+        // create labels for acidity
+            g.append("text")
+            // x coordinate
+            .attr("x", size/15)
+            // y coordinate
+            .attr("y", size -140)
+            // horizontal text alignment 
+            .attr("text-anchor", "middle")
+            // y coordinate offset
+            .attr("dy", "30px")
+            // x coordinate offset
+            .attr("dx", "35px")
+            .attr("class","sublabels")
+            // text 
+            .text("ACIDITY");   
+            
+        // create labels for acidity value
+            g.append("text")
+            // x coordinate
+            .attr("x", size/15)
+            // y coordinate
+            .attr("y", size -135)
+            // horizontal text alignment 
+            .attr("text-anchor", "middle")
+            // y coordinate offset
+            .attr("dy", "40px")
+            // x coordinate offset
+            .attr("dx", "35px")
+            .attr("class","labels")
+            // text 
+            .text(d=>d.acidity);     
+
+
+        // BODY    
+        // create labels body
+        g.append("text")
+            // x coordinate
+            .attr("x", size/15)
+            // y coordinate
+            .attr("y", size -120)
+            // horizontal text alignment 
+            .attr("text-anchor", "middle")
+            // y coordinate offset
+            .attr("dy", "60px")
+            // x coordinate offset
+            .attr("dx", "35px")
+            .attr("class","sublabels")
+            // text 
+            .text("BODY");   
+            
+        // create labels for body value
+            g.append("text")
+            // x coordinate
+            .attr("x", size/15)
+            // y coordinate
+            .attr("y", size -115)
+            // horizontal text alignment 
+            .attr("text-anchor", "middle")
+            // y coordinate offset
+            .attr("dy", "70px")
+            // x coordinate offset
+            .attr("dx", "35px")
+            .attr("class","labels")
+            // text 
+            .text(d=>d.body);  
+
+
+        // TANNIN    
+        // create labels for tannin
+        g.append("text")
+            // x coordinate
+            .attr("x", size/15)
+            // y coordinate
+            .attr("y", size -100)
+            // horizontal text alignment 
+            .attr("text-anchor", "middle")
+            // y coordinate offset
+            .attr("dy", "90px")
+            // x coordinate offset
+            .attr("dx", "35px")
+            .attr("class","sublabels")
+            // text 
+            .text("TANNIN");   
+
+        // create labels for tannin value
+            g.append("text")
+            // x coordinate
+            .attr("x", size/15)
+            // y coordinate
+            .attr("y", size -95)
+            // horizontal text alignment 
+            .attr("text-anchor", "middle")
+            // y coordinate offset
+            .attr("dy", "100px")
+            // x coordinate offset
+            .attr("dx", "35px")
+            .attr("class","labels")
+            // text 
+            .text(d=>d.tannin);  
+
+
+        // TASTING NOTES   
+        // create labels for tasting notes
+        g.append("text")
+            // x coordinate
+            .attr("x", size/15)
+            // y coordinate
+            .attr("y", size -90)
+            // horizontal text alignment 
+            .attr("text-anchor", "middle")
+            // y coordinate offset
+            .attr("dy", "130px")
+            // x coordinate offset
+            .attr("dx", "35px")
+            .attr("class","sublabels")
+            // text 
+            .text("TASTING NOTES");   
+
+        // create labels for tasting notes values
+            g.append("text")
+            // x coordinate
+            .attr("x", size/15)
+            // y coordinate
+            .attr("y", size -85)
+            // horizontal text alignment 
+            .attr("text-anchor", "middle")
+            // y coordinate offset
+            .attr("dy", "140px")
+            // x coordinate offset
+            .attr("dx", "35px")
+            .attr("class","labels")
+            // text 
+            .text(d=>d.tasting_notes);            
+
+        // PAIRING NOTES   
+        // create labels for pairing notes
+        g.append("text")
+            // x coordinate
+            .attr("x", size/15)
+            // y coordinate
+            .attr("y", size -40)
+            // horizontal text alignment 
+            .attr("text-anchor", "middle")
+            // y coordinate offset
+            .attr("dy", "130px")
+            // x coordinate offset
+            .attr("dx", "35px")
+            .attr("class","sublabels")
+            // text 
+            .text("PAIRING NOTES");   
+
+        // create labels for pairing notes values
+            g.append("text")
+            // x coordinate
+            .attr("x", size/15)
+            // y coordinate
+            .attr("y", size -40)
+            // horizontal text alignment 
+            .attr("text-anchor", "middle")
+            // y coordinate offset
+            .attr("dy", "145px")
+            // x coordinate offset
+            .attr("dx", "35px")
+            .attr("class","labels")
+            // text 
+            .text(d=>d.food_pairings);
+
+
+        // create title
+        svg.append("text")
+            // x coordinate
+            .attr("x", 450)
+            // y coordinate
+            .attr("y", 50)
+            // horizontal text alignment
+            .attr("text-anchor", "start")
+            .attr("fill", "#e50005")
+            .attr("class", "title")
+            // adds padding
+            .attr("x", "100px")
+            .attr("y", "50px")
+            // tex here
+            .text("RED WINE VARIETIES");
+
+        });
+        
+
+        </script>
+    </body>
+</html>
