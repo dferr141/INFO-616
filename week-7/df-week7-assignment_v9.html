@@ -1,0 +1,561 @@
+<!-- week 7 assignment -->
+<!-- INTERACTIVITY -->
+<!-- bar charts | buttons to update data -->
+
+<!-- data: historical college tuition -->
+<!-- data source: https://nces.ed.gov/programs/digest/d20/tables/dt20_330.10.asp -->
+
+<!-- separate csvs of data by decade consisting of tuitiion cost by year -->
+<!-- 2010s // 2000s // 1990s //  1980s // 1970s -->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head)>
+    <meta charset="utf-8">
+    <title>College Tuition by Decade</title>
+    <script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
+
+    <style type="text/css">
+        /* CSS */
+
+        /* title style */
+        h1 {
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: lighter;
+            padding-left: 50px;
+            padding-top: 20px;
+            color: #000000;
+        }
+
+        /* intro text style */
+        h2 {
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: bolder;
+            font-size: medium;
+            padding-left: 50px;
+            padding-bottom: 20px;
+            color: #000000;
+        }
+
+        #buttonDiv {
+            padding-left: 50px;
+        }
+
+        /* button style */
+        button {
+            background-color: #000000;
+            color: white;
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: lighter;
+            padding: 1%;
+            /* margin: 1%; */
+            /* margin-left: 50px; */
+            /* margin-top: 3%; */
+            margin-bottom: 5%;
+            font-size: 1em;
+            /* border-radius: 9px; */
+            box-shadow: none;
+            border: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        /* 1970s button */
+        #button70 {
+            background-color: red;
+        }
+
+        /* 1980s button */
+        #button80 {
+            background-color: teal;
+        }
+
+        /* 190s button */
+        #button90 {
+            background-color: blue;
+        }
+
+        /* 2000s button */
+        #button00 {
+            background-color: purple;
+        }
+
+        /* 2010s button */
+        #button10 {
+            background-color: black;
+        }
+
+        svg {
+            width: 1200px;
+            height: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
+
+        /* data label */
+        .text {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* style x and y axis individually */
+        .x path {
+            stroke: #D1D0CE;
+        }
+
+        .x .tick line {
+            stroke: #E5E4E2;
+        }
+
+        .y path {
+            stroke: #D1D0CE;
+        }
+
+        .y .tick line {
+            stroke: #E5E4E2;
+        }
+
+        /* axis labels */
+        .x.label {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            color: #696969;
+        }
+
+        .y.label {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10px;
+            color: #696969;
+        }
+
+        /* axis titles */
+        .x.title {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            font-weight: bolder;
+        }
+
+        .y.title {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            font-weight: bolder;
+        }
+    </style>
+
+
+    </head>
+
+
+    <body>
+
+        <!-- add title and intro to page -->
+        <h1> College Tuitions </h1>
+        <h2> Intro Text Here </h2>
+
+
+        <!-- MULTIPLE BUTTONS TO TRIGGER MULTIPLE FUNCTIONS -->
+        <!-- place buttons -->
+        <div id='buttonDiv'>
+            <button id="button70"> 1970s</button>
+            <!-- adds space between buttons-->
+            &nbsp;&nbsp;&nbsp;
+            <button id="button80"> 1980s</button>
+            &nbsp;&nbsp;&nbsp;
+            <button id="button90"> 1990s</button>
+            &nbsp;&nbsp;&nbsp;
+            <button id="button00"> 2000s</button>
+            &nbsp;&nbsp;&nbsp;
+            <button id="button10"> 2010s</button>
+        </div>
+
+        <svg></svg>
+
+        <script type="text/javascript">
+
+            // declare chart width and height 
+            const margin = 50;
+            const width = 1200;
+            const height = 600;
+
+            // initial dataset: 2010s - LET because data is not a constant
+            // let dataset = d3.csv("tutitions_2010s.csv").then(function(dataset){
+            let dataset = d3.csv("tutitions_2010s.csv").then(function (dataset) {
+
+
+                // format data 
+                dataset.forEach(function (d) {
+                    // add + sign to read in data as number
+                    d.year = d.year;
+                    d.tuition = +d.tuition;
+                });
+
+                let maxY = d3.max(dataset, d => d.tuition);
+                let xScale = d3.scaleBand()
+                    .domain(dataset.map(d => d.year))
+                    .range([margin, width - margin])
+                    .paddingOuter(.2)
+                    .paddingInner(.2);
+                let yScale = d3.scaleLinear()
+                    .domain([0, maxY])
+                    .range([height - margin, margin]);
+                let bottomAxis = d3.axisBottom().scale(xScale);
+                let leftAxis = d3.axisLeft().scale(yScale);
+
+                // create SVG 
+                const svg = d3.select("svg");
+
+                // make bars and append data 
+                svg.selectAll("rect")
+                    .data(dataset)
+                    .enter()
+                    .append("rect")
+                    .attr("x", d => xScale(d.year))
+                    .attr("y", d => yScale(d.tuition))
+                    .attr("width", d => xScale.bandwidth())
+                    .attr("height", d => (height - margin) - yScale(d.tuition))
+                    .attr("fill", "#000000");
+
+                // add data labels 
+                svg.selectAll("text")
+                    .data(dataset)
+                    .enter()
+                    .append("text")
+                    .text(d => d.tuition_clean)
+                    .attr("x", d => xScale(d.year) + 40)
+                    .attr("y", d => yScale(d.tuition) - 15)
+                    .attr("class", "text")
+                    .attr("fill", "black")
+                    .attr("text-anchor", "middle");
+
+                // add x axis label
+                svg.append("text")
+                    .attr("class", "x title")
+                    .attr("text-anchor", "end")
+                    .attr("x", width - 50)
+                    .attr("y", height - 10)
+                    .attr("fill", "gray")
+                    .text("YEAR");
+
+                // add y axis label
+                svg.append("text")
+                    .attr("class", "y title")
+                    .attr("text-anchor", "end")
+                    .attr("x", width - 1150)
+                    .attr("y", height - 570)
+                    .attr("fill", "gray")
+                    .text("TUITION");
+
+                // implement bottom axis
+                svg.append("g")
+                    .attr("class", "x path")
+                    .attr("class", "x tick line")
+                    .attr("class", "x label")
+                    .attr("transform", "translate(0," + (height - margin) + ")")
+                    .call(bottomAxis);
+
+                // implement left axis
+                svg.append("g")
+                    .attr("class", "y path")
+                    .attr("class", "y tick line")
+                    .attr("class", "y label")
+                    .attr("transform", "translate(" + margin + ",0)")
+                    .call(leftAxis);
+
+
+
+
+                // 1970s
+                // UPDATE DATA WITH CLICK OF BUTTON
+                // call new dataset to apply on the click of a button
+                d3.select("#button70")
+                    .on("click", (event, d) => {
+
+                        // new data we want to display - do NOT use a variable declaration
+                        dataset = d3.csv("tutitions_1970s.csv").then(function (dataset) {
+                            // dataset = [d3.csv("tutitions_1970s.csv")]; 
+
+
+                            // // format data 
+                            dataset.forEach(function (d) {
+                                // add + sign to read in data as number
+                                d.year = d.year;
+                                d.tuition = +d.tuition;
+                            });
+
+                            let xScale = d3.scaleBand()
+                                .domain(dataset.map(d => d.year))
+                                .range([margin, width - margin])
+                                .paddingOuter(.2)
+                                .paddingInner(.2);
+                            let bottomAxis = d3.axisBottom().scale(xScale);
+
+                            console.log(dataset);
+
+                            // copy and paste ALL the attr() that will need to be updated
+                            // make bars and append data 
+                            // ONLY UPDATE WHAT IS NEEDS TO CHANGE
+                            svg.selectAll("rect")
+                                .data(dataset)
+                                .transition()
+                                //.attr("x", d => xScale(d.year))
+                                .attr("y", d => yScale(d.tuition))
+                                //.attr("width", d => xScale.bandwidth())
+                                .attr("height", d => (height - margin) - yScale(d.tuition))
+                                .attr("fill", "red");
+
+                            // update data labels 
+                            svg.selectAll("text")
+                                .data(dataset)
+                                .transition()
+                                .text(d => d.tuition_clean)
+                                //.attr("x", d => xScale(d.year) +40) 
+                                .attr("y", d => yScale(d.tuition) - 15)
+                                .attr("class", "text")
+                                .attr("fill", "red")
+                                .attr("text-anchor", "middle");
+
+                            // update bottom axis
+                            svg.selectAll("g")
+                                .data(dataset)
+                                .attr("class", "x path")
+                                .attr("class", "x tick line")
+                                .attr("class", "x label")
+                                .attr("transform", "translate(0," + (height - margin) + ")")
+                                .call(bottomAxis);
+
+
+
+
+
+
+                            // 1980s
+                            d3.select("#button80")
+                                .on("click", (event, d) => { 
+
+                                    // new data we want to display - do NOT use a variable declaration
+                                    dataset = d3.csv("tutitions_1980s.csv").then(function (dataset) {
+
+                                        dataset.forEach(function (d) {
+                                            d.year = d.year;
+                                            d.tuition = +d.tuition;
+                                        });
+
+                                        let xScale = d3.scaleBand()
+                                            .domain(dataset.map(d => d.year))
+                                            .range([margin, width - margin])
+                                            .paddingOuter(.2)
+                                            .paddingInner(.2);
+                                        let bottomAxis = d3.axisBottom().scale(xScale);
+
+                                        console.log(dataset);
+
+                                        // update bars and append data 
+                                        svg.selectAll("rect")
+                                            .data(dataset)
+                                            .transition()
+                                            .attr("y", d => yScale(d.tuition))
+                                            .attr("height", d => (height - margin) - yScale(d.tuition))
+                                            .attr("fill", "teal");
+
+                                        // update data labels 
+                                        svg.selectAll("text")
+                                            .data(dataset)
+                                            .transition()
+                                            .text(d => d.tuition_clean)
+                                            .attr("y", d => yScale(d.tuition) - 15)
+                                            .attr("class", "text")
+                                            .attr("fill", "teal")
+                                            .attr("text-anchor", "middle");
+
+                                        // update bottom axis
+                                        svg.selectAll("g")
+                                            .data(dataset)
+                                            .attr("class", "x path")
+                                            .attr("class", "x tick line")
+                                            .attr("class", "x label")
+                                            .attr("transform", "translate(0," + (height - margin) + ")")
+                                            .call(bottomAxis);
+                                    });
+
+
+                                    // 1990s
+                                    d3.select("#button90")
+                                        .on("click", (event, d) => {
+
+                                            // new data we want to display - do NOT use a variable declaration
+                                            dataset = d3.csv("tutitions_1990s.csv").then(function (dataset) {
+
+                                                dataset.forEach(function (d) {
+                                                    d.year = d.year;
+                                                    d.tuition = +d.tuition;
+                                                });
+
+                                                let xScale = d3.scaleBand()
+                                                    .domain(dataset.map(d => d.year))
+                                                    .range([margin, width - margin])
+                                                    .paddingOuter(.2)
+                                                    .paddingInner(.2);
+                                                let bottomAxis = d3.axisBottom().scale(xScale);
+
+                                                console.log(dataset);
+
+                                                // update bars and append data 
+                                                svg.selectAll("rect")
+                                                    .data(dataset)
+                                                    .transition()
+                                                    .attr("y", d => yScale(d.tuition))
+                                                    .attr("height", d => (height - margin) - yScale(d.tuition))
+                                                    .attr("fill", "blue");
+
+                                                // update data labels 
+                                                svg.selectAll("text")
+                                                    .data(dataset)
+                                                    .transition()
+                                                    .text(d => d.tuition_clean)
+                                                    .attr("y", d => yScale(d.tuition) - 15)
+                                                    .attr("class", "text")
+                                                    .attr("fill", "blue")
+                                                    .attr("text-anchor", "middle");
+
+                                                // update bottom axis
+                                                svg.selectAll("g")
+                                                    .data(dataset)
+                                                    .attr("class", "x path")
+                                                    .attr("class", "x tick line")
+                                                    .attr("class", "x label")
+                                                    .attr("transform", "translate(0," + (height - margin) + ")")
+                                                    .call(bottomAxis);
+                                            });
+
+
+
+                                            // 2000s
+                                            d3.select("#button00")
+                                                .on("click", (event, d) => {
+
+                                                    // new data we want to display - do NOT use a variable declaration
+                                                    dataset = d3.csv("tutitions_2000s.csv").then(function (dataset) {
+
+                                                        dataset.forEach(function (d) {
+                                                            d.year = d.year;
+                                                            d.tuition = +d.tuition;
+                                                        });
+
+                                                        let xScale = d3.scaleBand()
+                                                            .domain(dataset.map(d => d.year))
+                                                            .range([margin, width - margin])
+                                                            .paddingOuter(.2)
+                                                            .paddingInner(.2);
+                                                        let bottomAxis = d3.axisBottom().scale(xScale);
+
+                                                        console.log(dataset);
+
+                                                        // update bars and append data 
+                                                        svg.selectAll("rect")
+                                                            .data(dataset)
+                                                            .transition()
+                                                            .attr("y", d => yScale(d.tuition))
+                                                            .attr("height", d => (height - margin) - yScale(d.tuition))
+                                                            .attr("fill", "purple");
+
+                                                        // update data labels 
+                                                        svg.selectAll("text")
+                                                            .data(dataset)
+                                                            .transition()
+                                                            .text(d => d.tuition_clean)
+                                                            .attr("y", d => yScale(d.tuition) - 15)
+                                                            .attr("class", "text")
+                                                            .attr("fill", "purple")
+                                                            .attr("text-anchor", "middle");
+
+                                                        // update bottom axis
+                                                        svg.selectAll("g")
+                                                            .data(dataset)
+                                                            .attr("class", "x path")
+                                                            .attr("class", "x tick line")
+                                                            .attr("class", "x label")
+                                                            .attr("transform", "translate(0," + (height - margin) + ")")
+                                                            .call(bottomAxis);
+                                                    });
+
+
+                                            // 2010s
+                                            d3.select("#button10")
+                                                .on("click", (event, d) => {
+
+                                                    // new data we want to display - do NOT use a variable declaration
+                                                    dataset = d3.csv("tutitions_2010s.csv").then(function (dataset) {
+
+                                                        dataset.forEach(function (d) {
+                                                            d.year = d.year;
+                                                            d.tuition = +d.tuition;
+                                                        });
+
+                                                        let xScale = d3.scaleBand()
+                                                            .domain(dataset.map(d => d.year))
+                                                            .range([margin, width - margin])
+                                                            .paddingOuter(.2)
+                                                            .paddingInner(.2);
+                                                        let bottomAxis = d3.axisBottom().scale(xScale);
+
+                                                        console.log(dataset);
+
+                                                        // update bars and append data 
+                                                        svg.selectAll("rect")
+                                                            .data(dataset)
+                                                            .transition()
+                                                            .attr("y", d => yScale(d.tuition))
+                                                            .attr("height", d => (height - margin) - yScale(d.tuition))
+                                                            .attr("fill", "black");
+
+                                                        // update data labels 
+                                                        svg.selectAll("text")
+                                                            .data(dataset)
+                                                            .transition()
+                                                            .text(d => d.tuition_clean)
+                                                            .attr("y", d => yScale(d.tuition) - 15)
+                                                            .attr("class", "text")
+                                                            .attr("fill", "black")
+                                                            .attr("text-anchor", "middle");
+
+                                                        // update bottom axis
+                                                        svg.selectAll("g")
+                                                            .data(dataset)
+                                                            .attr("class", "x path")
+                                                            .attr("class", "x tick line")
+                                                            .attr("class", "x label")
+                                                            .attr("transform", "translate(0," + (height - margin) + ")")
+                                                            .call(bottomAxis);
+                                                    });
+
+
+
+
+
+
+
+                                                });
+
+                                            });
+
+
+
+
+                                        });
+
+
+
+                                });
+
+                        });
+                    });
+            });
+
+        </script>
+    </body>
+
+</html>
