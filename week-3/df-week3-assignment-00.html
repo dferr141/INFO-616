@@ -1,0 +1,201 @@
+<!-- week 3 assignment -->
+<!-- bar chart // axes // scales // import CSV -->
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Bar Chart Scales and Load Data 2</title>
+        <script type="text/javascript" src= "https://d3js.org/d3.v7.min.js"></script>
+        <!-- add css here, directly -->
+        <style type="text/css">
+            h1 {
+                font-family: Arial, Helvetica, sans-serif;
+                font-weight: lighter;
+                padding-left: 25px;
+                padding-top: 20px;
+                color: #7D0552;
+            }
+            h2 {
+                font-family: Arial, Helvetica, sans-serif;
+                font-weight: bolder;
+                font-size: medium;
+                padding-left: 25px;
+                padding-bottom: 20px;
+                color: #990012;
+            }
+
+        /* add style to the class element "axis" we created below */
+            /* style both axis the same
+            .axis path, 
+            .axis line{
+                stroke: #D1D0CE;
+            }
+            .axis text {
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 10px;
+                color: #696969;
+                }
+            }*/
+            /* style x and y axis individually */
+            .x path {
+                stroke: #D1D0CE;
+            }
+            .x .tick line {
+                stroke: #E5E4E2;
+            }
+            .y path {
+                stroke: #D1D0CE;
+            }
+            .y .tick line {
+                stroke: #E5E4E2;
+            }
+            /* axis labels */
+            .x.label {
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 12px;
+                color: #990012;          
+            }
+            .y.label {
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 10px;
+                color: #696969;
+            }
+            /* axis titles */
+            .x.title {
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 12px;
+                font-weight: bolder; 
+            }
+            .y.title {
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 12px;
+                font-weight: bolder;  
+            }
+            
+            /* data label */
+            .text {
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 24px;
+                font-weight: bolder;            
+            }
+        </style>
+
+
+    </head>
+    <body>
+         <!-- add title to page -->
+         <h1> Hit Send! </h1>
+         <h2> Text messages I sent in one week </h2>
+
+        <script type="text/javascript">
+
+        // declare chart width and height  
+        const margin = 50;
+        const width = 900; 
+        const height = 600;   
+        
+        // import CSV to get data
+        d3.csv("df-texts-sent.csv").then(function(dataset){
+
+        // format data 
+        dataset.forEach(function(d){
+            // add + sign to read in data as number
+            d.texts = +d.texts;
+            d.day = d.day;
+        });
+        
+            const maxY = d3.max(dataset, d => d.texts);
+            const xScale = d3.scaleBand()
+                            .domain(dataset.map(d => d.day))
+                            .range([margin, width - margin])
+                            .paddingOuter(.2)
+                            .paddingInner(.2);
+            const yScale = d3.scaleLinear()
+                            .domain([0, maxY]) 
+                            .range([height - margin, margin]);
+            const bottomAxis = d3.axisBottom().scale(xScale);
+            const leftAxis = d3.axisLeft().scale(yScale);
+
+            
+            // create SVG 
+            const svg = d3.select("body")
+                        .append("svg")
+                        .attr("width", width)
+                        .attr("height", height);
+
+            // make bars and append data
+            svg.selectAll("rect") 
+                .data(dataset) 
+                .enter()
+                .append("rect")
+                .attr("x", d => xScale(d.day)) 
+                .attr("y", d => yScale(d.texts)) 
+                .attr("width", xScale.bandwidth())
+                .attr("height", d => (height-margin) - yScale(d.texts))
+                .attr("fill", "#7D0552");
+                // to add opacity
+                // .attr("opacity", ".75");
+
+            // add data labels 
+            svg.selectAll("text")
+                .data(dataset)
+                .enter()
+                .append("text")
+                // be specific with data to print
+                // could add text to the label ex .text(d=>d.texts + " texts")
+                .text(d=>d.texts)
+                // reference above from creating the bars
+                // +10 to shift lable to right
+                .attr("x", d => xScale(d.day) +30) 
+                // reference above from creating the bars
+                // -10 to shift label up
+                .attr("y", d => yScale(d.texts) -10)
+                .attr("class", "text")
+                // could not color text using CSS style... text is a SVG element, not really text
+                .attr("fill", "#990012");
+                // to center label - does not work so good
+                //.attr("text-anchor", "start")
+
+            // add x axis label
+            svg.append("text")
+                .attr("class", "x title")
+                .attr("text-anchor", "end")
+                .attr("x", width -50)
+                .attr("y", height -10)
+                .attr("fill", "#696969")
+                .text("DATE");
+
+            // add y axis label
+            svg.append("text")
+                .attr("class", "y title")
+                .attr("text-anchor", "end")
+                .attr("x", width -805)
+                .attr("y", height -570)
+                .attr("fill", "#696969")
+                .text("MESSAGES");
+
+            // implement bottom axis
+            svg.append("g")
+                // reference CSS in above code
+                .attr("class", "x path")
+                // remove the "." from x.label
+                .attr("class", "x tick line")
+                .attr("class", "x label") 
+                .attr("transform", "translate(0," + (height - margin) + ")") 
+                .call(bottomAxis)
+
+            // implement left axis
+            svg.append("g")
+                // reference CSS in above code
+                .attr("class", "y path")
+                // remove the "." from y.label
+                .attr("class", "y tick line")
+                .attr("class", "y label") 
+                .attr("transform", "translate(" + margin + ",0)")
+                .call(leftAxis); 
+        });
+            
+        </script>
+    </body>
+</html>
