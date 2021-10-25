@@ -1,0 +1,41 @@
+<!-- week 4 assignment -->
+<!-- create SVG shape - bird -->
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>SVG BIRD</title>
+        <script type="text/javascript" src= "https://d3js.org/d3.v7.min.js"></script>
+        <style type="text/css"></style>
+    </head>
+    <body>
+
+    <!-- common SVG path commands-->
+    <!-- M - move to -->
+    <!-- L - line to (L absolute / l relative)-->
+    <!-- C - curve to (C absolute / c relative)-->
+    <!-- Z - close path -->
+    <!-- cap vs lower case has meaning -->
+    <!-- S absolute -->
+    <!-- s relative-->
+    <!-- Bezier curve: draws a Bezier curve from where you are to an end point (x2,y2) ﬁrst two coordinates 
+    (px1,py1  px2, py2) = control points: control shape of curve -->
+
+        <svg x="100" height="100">
+            <path d="M30,80
+            c10,3 19,4 30,3
+            c10,-2 20,-10 25,-20
+            c7,-10 4,-30 4,-30
+            c0,-1 0,-10 0,-10
+            l8,-4
+            L88,15
+            c0,0 -2,-4 -3,-6
+            c-7,-10 -20,-8 -25,-2
+            C54,11 8,82 8,82
+            S30,80 30,80z"
+            stroke="red" stroke-width="0" fill="red"/>
+	    </svg>
+
+    </body>
+</html>

@@ -1,0 +1,163 @@
+<!-- week 4 assignment -->
+<!-- attach data to SVG shape -->
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>NYC Bird Breeding</title>
+        <script src= "https://d3js.org/d3.v7.min.js"></script>
+        <style type="text/css"> 
+        	svg{
+            width:1200px;
+            height:1200px;
+          }
+          .title {
+            font-size: 24px;
+            font-weight: lighter;
+            font-family: Arial, Helvetica, sans-serif;
+          }
+          .labels{
+            font-size: 12px;
+            font-weight: bold;
+            font-family: Arial, Helvetica, sans-serif;
+          }
+          /* svg{
+            width: 800px;
+            height: 800px;
+            } */
+        </style>
+
+    </head>
+    <body>
+         <sv> 
+         </svg>
+
+        <script type="text/javascript">
+
+        // data - 'Breeding Bird Atlas' count in NYC counties
+        // https://data.ny.gov/Energy-Environment/Breeding-Bird-Atlases/vk8g-ypxi
+        d3.csv("birds.csv").then(dataset => {  
+
+        // format the data 
+        dataset.forEach(function(d){
+            d.county = d.county;
+            d.count = +d.count;
+        });
+
+        // color with scales, d3 min and max 
+        const maxData = d3.max(dataset, d=>d.count);
+        const minData = d3.min(dataset, d=>d.count);
+        const myColor = d3.scaleLinear()
+                        .domain([minData, maxData])
+                        // used the lightest and darkest blues from color brewer 5 color single hue palette
+                        .range(["#eff3ff", "#08519c"]);
+        
+        // QUANTIZE COLOR SCALE - CREATES BUCKETS FOR DATA - USE THIS IN FUTURE
+        // colorscale
+        // Colorbrewer 3-class Greens Color Palette
+        // const myColor = d3.scaleQuantize()
+                          // .domain([minData, maxData])
+                          // .range(["#e5f5e0", "#a1d99b","#31a354"]);
+    
+        // original bird SVG
+        // M30,80
+        // c10,3 19,4 30,3
+        // c10,-2 20,-10 25,-20
+        // c7,-10 4,-30 4,-30
+        // c0,-1 0,-10 0,-10
+        // l8,-4
+        // L88,15
+        // c0,0 -2,-4 -3,-6
+        // c-7,-10 -20,-8 -25,-2
+        // C54,11 8,82 8,82
+        // S30,80 30,80z
+
+        // draw with d3.line()                 
+        const birdGenerator = d3.line();
+
+        // SVG path for bird   
+            
+        // const bird  = ["M30,80 c10,3 19,4 30,3 c10,-2 20,-10 25,-20 c7,-10 4,-30 4,-30 c0,-1 0,-10 0,-10 l8,-4 L88,15 c0,0 -2,-4 -3,-6 c-7,-10 -20,-8 -25,-2 C54,11 8,82 8,82 S30,80 30,80z"];
+
+        // const bird  = ["M30,80 c10,3, 19,4, 30,3 c10-2, 20-10, 25-20 c7-10, 4-30, 4-30 c0-1, 0-10, 0-10], l8-4 L88,15 c0,0 -2-4 -3-6 c-7-10 -20-8 -25-2 C54,11, 8,82, 8,82 S30,80, 30,80"];
+        
+
+        // COMMENT SHORTCUT: COMMAND + K ,C
+        // UN-COMMENT SHORTCUT: COMMAND + K ,U
+        const bird = [
+        [30,80],
+        [10,3, 19,4, 30,3],
+        [10,-2, 20,-10, 25,-20],
+        [7,-10, 4,-30, 4,-30],
+        [0,-1, 0,-10 ,0,-10],
+        [8,-4],
+        [88,15],
+        [0,0, -2,-4, -3,-6],
+        [-7,-10, -20,-8, -25,-2],
+        [54,11, 8,82, 8,82],
+        [30,80, 30,80]
+        ];
+
+        const pathString = birdGenerator(bird);
+        const perRow = 3;
+        const size = 250;
+        const sizeY = 250;
+
+        const svg = d3.select("svg");
+
+        //making groups
+        const g = svg.selectAll("g")
+                      .data(dataset, d=>d)
+                      .enter()
+                      .append("g")
+                      .attr("transform", (d,i)=>{
+                        const x = (i % perRow + 1) * size;
+                        const y = (Math.floor(i/perRow)+.55) * sizeY;
+                        return 'translate(' + [x,y] + ')';})
+                      // .attr("fill", d=> myColor(d.height))
+                      // .attr("stroke", "#00441b")
+                      // .attr("stroke-width", "1px");
+                      // see what happens if you apply ^^ here instead of below
+
+        g.append("path")
+            .attr("d", pathString)
+            .attr("fill", d=> myColor(d.count))
+            // use darker blue for stroke
+            .attr("stroke", "#08306b")
+            .attr("stroke-width", ".5px");
+
+        // create Labels
+        g.append("text")
+            // x coordinate
+            .attr("x", size/7)
+            // y coordinate
+            .attr("y", size - 130)
+            // horizontal text alignment 
+            .attr("text-anchor", "middle")
+            // y coordinate offset
+            .attr("dy", "5px")
+            .attr("class","labels")
+            // text 
+            .text(d=>d.county);
+
+
+        // create title
+        // *difference between svg.append text and g.append tex
+        svg.append("text")
+            // x coordinate
+            .attr("x", 450)
+            // y coordinate
+            .attr("y", 40)
+            // horizontal text alignment
+            .attr("text-anchor", "middle")
+            .attr("fill", "#08306b")
+            .attr("class", "title")
+            .text("Breeding Bird Atlas, by NYC boroug (darker color = higher bird count)"); //the text 
+
+        });
+        
+
+        </script>
+    </body>
+</html>
