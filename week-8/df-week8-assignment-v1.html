@@ -1,0 +1,188 @@
+<!-- WEEK 8 ASSIGNMENT: PIE CHART -->
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Hours in a Week</title>
+        <script type="text/javascript" src= "https://d3js.org/d3.v7.min.js"></script>
+        <style type="text/css">
+        
+            /* CSS */
+
+            body {
+                background-color: #E74C3C;
+            }
+            
+            /* title style */
+            h1 {
+                font-family: Arial, Helvetica, sans-serif;
+                font-weight: bold;
+                font-size: xx-large;
+                padding-left: 50px;
+                padding-top: 20px;
+                color: white;
+            }
+
+            /* intro text style */
+            h2 {
+                font-family: Arial, Helvetica, sans-serif;
+                font-weight: bolder;
+                font-size: large;
+                font-style: italic;
+                padding-left: 50px;
+                padding-bottom: 50px;
+                color: #000000;
+            }
+
+            svg {
+                width: 1200px;
+                height: 600px;
+                margin-left: auto;
+                margin-right: auto;
+                display: block;
+            }
+
+            /* labels directly on pie */
+            .labels{
+                font-size: 14px;
+                font-weight: normal;
+                font-family: sans-serif;
+            }
+          
+            /* style tooltip */
+            #tooltip{
+                position: absolute;
+                width: 120px;
+                height: 50px;
+                padding: 5px; 
+                padding-top: 15px;   
+                text-align: center; 
+                font-family:sans-serif;
+                font-size: 18px;
+                font-weight: 550;
+                background: #F9E79F; 
+                /*border-radius: 8px;*/
+            }
+
+        </style>
+    </head>
+    <body>
+        <!-- add title and intro to page -->
+        <h1> Hours in a Week </h1>
+        <h2> where all the time goes... </h2>
+
+
+        <svg width="600" height="600"></svg>
+        <script type="text/javascript">
+           
+            // import CSV data
+            let dataset = d3.csv("my_week.csv").then(function (dataset) {
+                // format data 
+                dataset.forEach(function (d) {
+                // add + sign to read in data as number
+                    d.do = d.do;
+                    d.hours = +d.hours;
+            });
+
+
+            const svg = d3.select("svg");
+            const w = 600;
+            //const myColor = d3.scaleOrdinal(d3.schemeSpectral[6]);
+            const myColor = d3.scaleOrdinal(d3.schemeGreys[6]);
+                
+
+
+            // NEW
+            // radius parameters
+            // requires INNER and OUTER
+            // use inner to creat doughnut / set to 0 for pie
+            const outerRadius = 200;
+            const innerRadius = 75; 
+            // doughnut example
+            // const outerRadius = 200;
+            // const innerRadius = 150;
+           
+            // d3.arc()creates our wedges 
+            // path generator function
+            // requires inner AND outer
+            const arcs = d3.arc()  
+                        .innerRadius(innerRadius)
+                        .outerRadius(outerRadius)
+
+
+            //pie generator
+            const pie = d3.pie()
+                .sort(null)
+                // reference specifc CSV data here
+                .value(function(d) { return d.hours; d.do; });
+                            // adds spaces in between wedges, while keeping arcs proportionally sized
+                            //.padAngle(.04);
+
+
+            // tooltip (positioned outside of SVG)
+            const tooltip =d3.select("body")
+                    .append("div")
+                    .attr("id", "tooltip")
+                    .style("opacity", 0);
+
+                    
+            // group to build our pie chart
+            const groups = svg.selectAll("g.arc")
+                    // provide data to pie generator
+                    .data(pie(dataset))
+                    .enter()
+                    .append("g")
+                    .attr("class", "arc")
+                    // for arcs" transform and translate
+                    .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")")
+                    .on("mouseover", (event, d)=> {
+                        d3.select("#tooltip")
+                            .transition()
+                            // milliseconds
+                            .duration(200)
+                            .style("opacity", 1)
+                            //.attr("transform", d=> "translate(" + arcs.centroid(d) + ")")
+                            .attr("text-anchor", "middle")
+                            // x coordinate of mouse
+                            //.style("left", (event.pageX + 2) + "px")
+                            // y coordinate of mouse
+                            //.style("top", (event.pageY + 2) + "px")
+                            // html here for <br>
+                            tooltip.html(d.do + "<br/>" + "hours: " + d.value)
+
+                            console.log(dataset);
+                    })     
+                    .on("mouseout", (event, d)=>{
+                        d3.select("#tooltip")
+                            .transition()
+                            .style("opacity", 0);
+                    })
+                    .on("mousemove", (event, d) =>{
+                        d3.select("#tooltip")
+                            .style("left", (event.pageX + 2) + "px")
+                            .style("top", (event.pageY + 2) + "px")
+                    });
+
+
+                groups.append("path")
+                    .attr("fill", (d,i)=> myColor(i))
+                    // d of our path 
+                    .attr("d", arcs); 
+            
+
+
+            // // labels
+            // groups.append("text")
+            //         // function that positions labels in midpoint of arc
+            //         .attr("transform", d=> "translate(" + arcs.centroid(d) + ")")
+            //         .attr("text-anchor", "middle")
+            //         .attr("class", "labels")
+            //         // value of data
+            //         //.text(d=>d.do);
+            //         .text(d=>d.value);
+
+            });
+        </script>
+    </body>
+</html>

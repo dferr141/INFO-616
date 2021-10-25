@@ -1,0 +1,213 @@
+<!-- WEEK 8 ASSIGNMENT: STACKED BAR -->
+<!-- reference: https://www.d3-graph-gallery.com/graph/barplot_stacked_hover.html -->
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<head>
+    <meta charset="utf-8">
+    <title>Hours in a Day</title>
+    <script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+<style type="text/css">
+    /* CSS */
+
+    body {
+        background-color: #E74C3C;
+    }
+
+    /* title style */
+    h1 {
+        font-family: Arial, Helvetica, sans-serif;
+        font-weight: bold;
+        font-size: xx-large;
+        padding-left: 50px;
+        padding-top: 20px;
+        color: white;
+    }
+
+    /* intro text style */
+    h2 {
+        font-family: Arial, Helvetica, sans-serif;
+        font-weight: bolder;
+        font-size: large;
+        font-style: italic;
+        padding-left: 50px;
+        padding-bottom: 50px;
+        color: #000000;
+    }
+
+    svg {
+        width: 1200px;
+        height: 800px;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+    }
+
+    /* style tooltip */
+    #tooltip{
+            position: absolute;
+            width: 125px;
+            height: 50px;
+            padding: 5px; 
+            padding-top: 15px;
+            text-align: center; 
+            font-family:sans-serif;
+            font-size: 18px;
+            font-weight: 550;
+            line-height: 125%;
+            background: #F9E79F; 
+            /*border-radius: 8px;*/
+    } 
+
+    /* axis labels */
+    .x.label {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 14px;
+        font-weight: bolder;
+        color: black;
+    }
+
+    /* style x and y axis individually */
+    .x path {
+        stroke: #E74C3C;
+    }
+
+    .x .tick line {
+        stroke: #E74C3C;
+    }
+
+</style>
+
+<body>
+
+    <!-- add title and intro to page -->
+    <h1> Hours in a Day </h1>
+    <h2> where all the time goes... </h2>
+
+    <!-- div for graph  -->
+    <div id="my_dataviz">
+    </div>
+
+    <script>
+
+        // set dimensions and margins of graph
+        const margin =
+            { top: 10, right: 30, bottom: 20, left: 50 },
+            width = 800 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+        // append svg object to page
+        const svg = d3.select("#my_dataviz")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // parse data
+        d3.csv("my_days.csv").then(function (data) {
+
+            // list of subgroups = header of the csv files = soil condition here
+            const subgroups = data.columns.slice(1)
+
+            // list of groups = value of the first column called group
+            const groups = data.map(d => d.day)
+
+            // add X axis
+            const x = d3.scaleBand()
+                .domain(groups)
+                .range([0, width])
+                .padding([0.2])
+            svg.append("g")
+                .attr("transform", `translate(0, ${height})`)
+                .call(d3.axisBottom(x).tickSizeOuter(0))
+                .attr("class", "x path")
+                .attr("class", "x tick line")
+                .attr("class", "x label")
+                .attr("transform", "translate(0," + (height + 10) + ")");
+
+            // add Y axis
+            const y = d3.scaleLinear()
+                .domain([0, 24])
+                .range([height, 0]);
+            // HIDE Y AXIS - don't need it here
+            //svg.append("g")
+            //.call(d3.axisLeft(y));
+
+            // color palette = one color per subgroup
+            const color = d3.scaleOrdinal()
+                .domain(subgroups)
+                .range(['#ffffff','#88807c', '#55504d', '#3b3836', '#22201f', '#080807'])
+
+            //stack the data per subgroup
+            const stackedData = d3.stack()
+                .keys(subgroups)
+                (data)
+
+
+            const tooltip = d3.select("#my_dataviz")
+                .append("div")
+                .style("opacity", 0)
+                .attr("id", "tooltip")
+
+
+            // Three function that change the tooltip when user hover / move / leave a cell
+            const mouseover = function (event, d) {
+                const subgroupName = d3.select(this.parentNode).datum().key;
+                const subgroupValue = d.data[subgroupName];
+                tooltip
+                    .html(subgroupName + "<br>"  + subgroupValue + " hours")
+                    .style("opacity", 1)
+                    .transition()
+                    .duration(200)
+            }
+
+            const mousemove = function (event, d) {
+                tooltip
+                    //.style("transform", "translateY(-55%)")
+                    .style("transform", d=> "translate(" + 0 + ")")
+                    .style("left", (event.pageX + 2) + "px")
+                    .style("top", (event.pageY + 2) + "px")
+            }
+
+            const mouseleave = function (event, d) {
+                tooltip
+                    .style("opacity", 0)
+            }
+
+            
+            // show the bars
+            svg.append("g")
+                .selectAll("g")
+                // enter stack data = loop key per key = group per group
+                .data(stackedData)
+                .join("g")
+                .attr("fill", d => color(d.key))
+                .selectAll("rect")
+
+                // enter a second time = loop subgroup per subgroup to add all rectangles
+                .data(d => d)
+                .join("rect")
+                .attr("x", d => x(d.data.day))
+                .attr("y", d => y(d[1]))
+                .attr("height", d => y(d[0]) - y(d[1]))
+                .attr("width", x.bandwidth())
+                // .attr("stroke", "grey")
+                
+                .on("mouseover", mouseover)
+                .on("mousemove", mousemove)
+                .on("mouseleave", mouseleave)
+
+
+
+            });
+
+
+
+    </script>
+</body>
+
+</html>
