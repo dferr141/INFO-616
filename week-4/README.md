@@ -6,7 +6,7 @@ Diane Ferrera, INFO-616
 -----------------------
 
 The attached visualizations were created as assignments for INFO-616, Programming Interactive Visualization.
-I generated the SVG bird in JavaScript.  I then attempted to append data to the bird, this venture was less sucessful, as I could not get the bird shape to render properly within the rest of my code.
+I generated the SVG bird in JavaScript.  I then attached data to the bird, to display bird counts using a color scale.
 
 
 Screenshot of SVG Bird here:
