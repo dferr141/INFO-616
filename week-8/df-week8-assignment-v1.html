@@ -115,12 +115,14 @@
             const pie = d3.pie()
                 .sort(null)
                 // reference specifc CSV data here
-                .value(function(d) { return d.hours; d.do; });
+                .value(function(d) { return d.hours;});
                             // adds spaces in between wedges, while keeping arcs proportionally sized
                             //.padAngle(.04);
 
 
             // tooltip (positioned outside of SVG)
+            // tooltip is working with the pie-ified data -  hence: call d.value
+            // D3 has changed information - hence not reading d.do
             const tooltip =d3.select("body")
                     .append("div")
                     .attr("id", "tooltip")
@@ -149,9 +151,12 @@
                             // y coordinate of mouse
                             //.style("top", (event.pageY + 2) + "px")
                             // html here for <br>
-                            tooltip.html(d.do + "<br/>" + "hours: " + d.value)
+                            // FIX HERE - need to reference original data, not only pie-data
+                            tooltip.html(d.data.do + "<br>" + "hours: " + d.value)
 
-                            console.log(dataset);
+                            //console.log(dataset);
+                            // need to console log pie-data specifically
+                            console.log(pie(dataset))
                     })     
                     .on("mouseout", (event, d)=>{
                         d3.select("#tooltip")
