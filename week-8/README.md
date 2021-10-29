@@ -11,6 +11,6 @@ Screenshot of My Time Data Visualization here:
 
 ![doughnut chart Assignment](/week-8/doughnut-chart2.gif "Week8: My Hours in a Week")
 
-![stacked bar chart Assignment](/week-8/stacked-bar-chart.gif "Week8: My Hours in a Day")
+![stacked bar chart Assignment](/week-8/stacked-bar-chart2.gif "Week8: My Hours in a Day")
 
 ![stacked area chart Assignment](/week-8/stacked-area-chart.png "Busy Busy: Hours in a Week")

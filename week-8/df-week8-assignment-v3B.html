@@ -1,0 +1,264 @@
+<!-- WEEK 8 ASSIGNMENT: STACKED AREA -->
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>So Busy</title>
+        <script type="text/javascript" src= "https://d3js.org/d3.v7.min.js"></script>
+
+        <style type="text/css">
+            
+            /* CSS */
+            body {
+                background-color: #E74C3C;
+            }
+
+            /* title style */
+            h1 {
+                font-family: Arial, Helvetica, sans-serif;
+                font-weight: bold;
+                font-size: xx-large;
+                padding-left: 50px;
+                padding-top: 20px;
+                color: white;
+            }
+
+            /* intro text style */
+            h2 {
+                font-family: Arial, Helvetica, sans-serif;
+                font-weight: bolder;
+                font-size: large;
+                font-style: italic;
+                padding-left: 50px;
+                padding-bottom: 50px;
+                color: #000000;
+            }
+
+            /* for chart */
+            #svg1 {
+                width: 800px;
+                height: 700px;
+                margin-left: 50px;
+                margin-right: auto;
+                
+            }
+
+
+            /* style x and y axis individually */
+            .x path {
+                stroke: #E74C3C;
+            }
+
+            .x .tick line {
+                stroke: #E74C3C;
+            }
+
+            .y path {
+                stroke: #E74C3C;
+            }
+
+            .y .tick line {
+                stroke: #E74C3C;
+            }
+
+            .y.label {
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 120px;
+                color: black;
+            }
+
+            /* axis labels */
+            .x.label {
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 12px;
+                font-weight: bolder;
+                color: black;
+            }
+
+            .y.label {
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 10px;
+                color: black;
+            }
+
+            /* axis titles */
+            .y.title {
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 14px;
+                font-weight: bolder;
+            }
+
+            /* legend labels */
+            .legend_labels {
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 16px;
+                font-weight: bold;
+                color: black;
+            }
+            
+        </style>
+
+
+    </head>
+
+    
+    <body>
+
+        <!-- add title and intro to page -->
+        <h1> Busy Busy </h1>
+        <h2> where all the time goes... </h2>
+
+        <!-- create 2 SVGs: for chart and for legend -->
+    	<svg width="800" height="600" id="svg1"></svg>  
+		<svg width="200" height="675" id="svg2"></svg>
+
+        <!-- <svg width="800" height="600"></svg> -->
+        <script type="text/javascript">
+        
+            // import CSV data
+            const dataset = d3.csv("this_week.csv").then(function (dataset) {
+                // format data 
+                dataset.forEach(function (d) {
+                // add + sign to read in data as number
+                    d.date = d.date;
+                    d.sleep = +d.sleep;
+                    d.work = +d.work;
+                    d.class = +d.class;
+                    d.commute = +d.commute;
+                    d.homework = +d.homework
+                    d.other = +d.other;
+            });
+
+
+
+            const svg = d3.select("svg");
+            const w = 800;
+            const h = 600;
+            const myColor = d3.scaleOrdinal(d3.schemeGreys[6]);
+            const padding = 25;
+            const margin = 25;
+
+
+            // d3.stack() - set up / stack layout parameteres
+            const stack = d3.stack()
+                            .keys(["sleep", "work", "class", "commute", "homework", "other"]);
+
+                          
+            // stack the data
+            const series = stack(dataset);
+            //console.log(series);
+
+            // set up our scales 
+            // with d3.scaleTime() for the x
+            const parseDate = d3.timeParse("%m/%d/%y"); 
+
+            const xScale = d3.scaleTime()
+                            .domain(d3.extent(dataset, d=>parseDate(d.date)))
+                            .range([padding, w-padding]); 
+
+            const yScale = d3.scaleLinear()
+                            .domain([0, d3.max(dataset, d => d.sleep + d.work + d.class + d.commute + d.homework + d.other)])
+                            .range([h-padding, padding]); 
+
+            //const bottomAxis = d3.axisBottom().scale(xScale); INCORRECT
+            // specify ticks - to get rid of the 12PM
+            const bottomAxis = d3.axisBottom().scale(xScale).ticks(7);
+            const leftAxis = d3.axisLeft().scale(yScale);
+
+            // area generator
+            const area = d3.area()
+                        // x-coordinate
+            			.x(d=> xScale(parseDate(d.data.date)))
+            			// base line
+                        .y0(d=>yScale(d[0]))
+                        // top line
+            			.y1(d=>yScale(d[1]));
+
+            // making areas
+            svg.selectAll("path")
+                .data(series)
+                .enter()
+                .append("path")
+                // path d, generated by .area()
+                .attr("d", area)
+                .style("fill", (d,i)=> myColor(i)); 
+                
+            // add y axis label
+            svg.append("text")
+                .attr("class", "y title")
+                .attr("text-anchor", "end")
+                .attr("x", w - 750)
+                .attr("y", h - 590)
+                .text("HOURS");
+
+            // y axis 
+            svg.append("g")
+                    .attr("class", "y path")
+                    .attr("class", "y tick line")
+                    .attr("class", "y label")
+                    .attr("transform", "translate(" + margin + ",0)")
+                    .call(leftAxis);   
+                    
+            // bottom axis   
+            svg.append("g")
+                .attr("transform", `translate(0, ${h})`)
+                // don't call axisBottom twice
+                //.call(d3.axisBottom(xScale).tickSizeOuter(0)  INCORRECT
+                .call(bottomAxis)
+                .attr("class", "x path")
+                .attr("class", "x tick line")
+                .attr("class", "x label")
+                .attr("transform", "translate(0," + (h - 10) + ")");
+            
+
+
+            // CREATE LEGEND
+            // select the svg area
+            var SVG = d3.select("#svg2")
+    
+            //create list of keys
+            var keys = ["sleep", "work", "class", "commute", "homework", "other"]
+    
+            // chart color scale
+            // reference from above: const myColor = d3.scaleOrdinal(d3.schemeGreys[5]);
+            var color = d3.scaleOrdinal()
+                .domain(keys)
+                .range(d3.schemeGreys[6]);
+
+            // legend colors
+            var size = 25
+            SVG.selectAll("mydots")
+                .data(keys)
+                .enter()
+                .append("rect")
+                    // 100 is where the first dot appears. 25 is the distance between dots
+                    .attr("x", 0)
+                    .attr("y", function(d,i){ return  + i*(size+10)}) 
+                    .attr("width", size)
+                    .attr("height", size)
+                    // .style("fill", function(d){ return color(d)})
+                    .style("fill", (d,i)=> myColor(i)); 
+    
+            // legend labels
+            SVG.selectAll("mylabels")
+                .data(keys)
+                .enter()
+                .append("text")
+                .attr("x", 15 + size*1.2)
+                //.attr("y", function(d,i){ return  + i*(size+10)})
+                .attr("y", function(d,i){ return 0 + i*(size+10) + (size/2)})
+                //.style("fill", function(d){ return color(d)})
+                .text(function(d){ return d})
+                .attr("class", "legend_labels")
+                .attr("text-anchor", "left")
+                .style("alignment-baseline", "middle")
+
+
+            });
+
+
+        
+        </script>
+    </body>
+</html>
