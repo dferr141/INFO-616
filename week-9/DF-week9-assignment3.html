@@ -1,0 +1,275 @@
+<!-- NETWORK ANALYSIST -->
+<!-- edge SOURCE = identifying number / corresponds to NODE ID / starting point of edge-->
+<!-- edge TARGET = ending point of edge / where edge is connecting to-->
+<!-- edge WEIGHT = number of times an edge appears between two specific nodes (here: years of connection) -->
+<!-- my data: friends / by connections / and years of those connections-->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Force Network Graph Example</title>
+        <script type="text/javascript" src= "https://d3js.org/d3.v7.min.js"></script>
+        <style type="text/css">
+
+            /* CSS */
+            body {
+                background-color: #202A44;
+            }
+
+            /* title style */
+            h1 {
+                font-family: Arial, Helvetica, sans-serif;
+                font-weight: lighter;
+                font-size: xx-large;
+                padding-left: 50px;
+                padding-top: 20px;
+                color: white;
+            }
+
+            /* intro text style */
+            h2 {
+                font-family: Arial, Helvetica, sans-serif;
+                font-weight: bolder;
+                font-size: medium;
+                font-style: italic;
+                padding-left: 50px;
+                padding-bottom: 10px;
+                color: white;
+            }
+
+            #svg1 {
+                width: 800px;
+                height: 600px;
+                /*margin-left: 50px;*/
+                /*margin-right: auto;*/
+                object-position: right top;
+            }
+
+            /* legend labels */
+            .legend_text {
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 14px;
+                font-weight: medium;
+                color:white;
+            }
+
+          
+            /* tooltip */
+            #tooltip{
+                position: absolute;
+                width: 150px;
+                height: 50px;
+                padding: 2px;    
+                padding-top: 12px;
+                text-align: center; 
+                font-family:Arial, Helvetica, sans-serif;
+                font-size: 14px;
+                font-weight: lighter;
+                line-height: 150%;
+                background: white; 
+                /*border-radius: 8px;*/
+          }
+
+        </style>
+    </head>
+    <body>
+       <!-- add title and intro to page -->
+       <h1> Friendships </h1>
+       <h2> all the connections.... </h2>
+
+       <svg width="800" height="600" id="svg1"></svg>
+       <svg width="200" height="600" id="svg2"></svg>
+
+       <script type="text/javascript">
+          
+           let svg = d3.select("#svg1");
+           const w = 800;
+           const h = 600; 
+           // const myColor = d3.scaleOrdinal(d3.schemeBlues[9]);
+           const myColor = d3.scaleOrdinal()
+               .range(['#F6E7A8', '#F4DB7F', '#EFCF5C', '#EBC445', '#CFAC3C', '#B1E2D7', '#8DD5C4', '#6DC5B1', '#57B89D', '#4CA28A', '#B5D6EE', '#91C0E5', '#6FACDD', '#4F98D5', '#4686BC', '#CDB6DB', '#B493CA', '#9C6FB8', '#844CA8', '#754393', '#653A7F'])
+           
+            // tooltip (positioned outside of SVG)
+            const tooltip =d3.select("body")
+                    .append("div")
+                    .attr("id", "tooltip")
+                    .style("opacity", 0);
+
+           // requires 2 CSVs - NODES and LINKS
+           Promise.all([
+               d3.csv("nodes.csv"),
+               d3.csv("links.csv"),
+           ]).then(function(files) {
+               // files[0] will contain nodes.csv
+               // files[1] will contain links.csv
+               // remember to put + when the field has #s in it
+               const dataset = {
+                   "nodes": files[0].map(d => { return {"id": +d.id, "name": d.name, "weight": d.weight}}),
+                   "links": files[1].map(d => { return {"source": +d.source, "target": +d.target, "weight": +d.weight}})
+               };
+               // console.log(dataset)
+
+               // force simulation
+               // usually use multiple ones
+               const simulation = d3.forceSimulation(dataset.nodes)
+
+                            // -30 is default, if not specified
+                            .force("charge", d3.forceManyBody())
+
+                            // nodes closer together, -30 is the default
+                            //.force("charge", d3.forceManyBody().strength(-10))
+
+                            // nodes farther apart
+                            .force("charge", d3.forceManyBody().strength(-100))
+
+                            // adds linkes / lines, adjusts spcing
+                            //.force("link", d3.forceLink(dataset.links))
+                            //.force("link", d3.forceLink(dataset.links).distance(50))
+                            .force("link", d3.forceLink(dataset.links).distance(200)) 
+
+                            // centers visualization, so not cut off page
+                            .force("center", d3.forceCenter().x(w/2).y(h/2))
+                            //.force("center", d3.forceCenter().x(w/4).y(h/4))
+                            //.force("center", d3.forceCenter().x(100).y(500));
+                            //.force("center", d3.forceCenter(500,500))
+
+                            // adjust how they spread out on x and y axii
+                            //.force("x", d3.forceX().x(50))
+                            //.force("y", d3.forceY().y(50));
+
+               // links (lines)
+               const links = svg.selectAll("line")
+                               .data(dataset.links)
+                               .enter()
+                               .append("line")
+                               .style("stroke", "white")
+                               .style("stroke-width", 1)
+                               // set to data /connection strength 
+                               // added / to thin lines
+                               .style("stroke-width", d=> d.weight/20); 
+
+                // our nodes (circles) come after our links on the SVG
+                const nodes = svg.selectAll("circle")
+                               .data(dataset.nodes)
+                               .enter()
+                               .append("circle")
+                               //.attr("r", 7) 
+                               // set to data - added *2 to increase size
+                               .attr("r", d=> d.weight*1.5) 
+                               .style("fill", (d,i)=>myColor(i))
+                               .style("opacity", .95)
+
+                                // call our drag event
+                                .call(d3.drag()
+                                   .on("start", dragstarted)
+                                   .on("drag", dragged)
+                                   .on("end", dragended))
+
+                                .on("mouseover", (event, d)=> {
+                                    d3.select("#tooltip")
+                                    .transition()
+                                    // milliseconds
+                                    .duration(300)
+                                    .style("opacity", .9)
+                                    // x coordinate of mouse
+                                    .style("left", (event.pageX + 0) + "px")
+                                    // y coordinate of mouse
+                                    .style("top", (event.pageY + 0) + "px")
+                                    //tooltip.html(d.name+ "<br>" + d.dataset.weight  + " years");
+                                    //tooltip.html(d.name+ "<br>" + d.data.weight  + " years");
+                                    //tooltip.html(d.name+ "<br>" + d.links.weight  + " years");
+                                    //tooltip.html(d.name+ "<br>" + dataset.links.weight  + " years");
+                                    //tooltip.html(d.name+ "<br>" + d.weight  + " years");
+                                    tooltip.html(d.name+ "<br>" + "years known: " + d.weight);
+                                });
+
+
+
+
+               // force ticks: remember our links are lines and nodes are circles, which have specific params
+               simulation.on("tick", (event,d)=>{
+                 
+                 links.attr("x1", d=>d.source.x)
+                      .attr("y1", d=>d.source.y)
+                      .attr("x2", d=>d.target.x)
+                      .attr("y2", d=>d.target.y);
+
+                 nodes.attr("cx", d=>d.x)
+                      .attr("cy", d=>d.y);
+               
+               });
+
+               // drag events
+               function dragstarted(event) {
+                    if (!event.active) simulation.alphaTarget(0.4).restart();
+                       event.subject.fx = event.subject.x;
+                       event.subject.fy = event.subject.y;
+                   }
+           
+               function dragged(event) {
+                   event.subject.fx = event.x;
+                   event.subject.fy = event.y;
+               }
+           
+               function dragended(event) {
+                   if (!event.active) simulation.alphaTarget(0);
+                       event.subject.fx = null;
+                       event.subject.fy = null;
+                }
+           
+               console.log(dataset);
+
+
+
+            // CREATE LEGEND
+            // select the svg area
+            let SVG = d3.select("#svg2")
+    
+            //create list of keys
+            var keys = ["Diane", "Andy", "Patrick", "Andrea", "Jeremy", "Julie", "Kim", "Bam", "Maya", "Leigh", "Liz","Chef","Meredith", "Anna",  "Laurie", "Suzanne", "Chris", "Ian", "Elizabeth", "Rob", "Meg"]
+
+    
+            // chart color scale
+            var color = d3.scaleOrdinal()
+                .domain(keys)
+                .range(['#F6E7A8', '#F4DB7F', '#EFCF5C', '#EBC445', '#CFAC3C', '#B1E2D7', '#8DD5C4', '#6DC5B1', '#57B89D', '#4CA28A', '#B5D6EE', '#91C0E5', '#6FACDD', '#4F98D5', '#4686BC', '#CDB6DB', '#B493CA', '#9C6FB8', '#844CA8', '#754393', '#653A7F']);
+
+            //legend colors
+            SVG.selectAll("mydots")
+                .data(keys)
+                .enter()
+                .append("circle")
+                    // moves right
+                    .attr("cx", 50)
+                     // 100 is where the first dot appears. 15 is the distance between dots
+                    .attr("cy", function(d,i){ return 100 + i*20})
+                    // controls size of dot
+                    .attr("r", 5)
+                    .style("fill", (d,i)=> myColor(i)); 
+
+    
+            // legend labels
+            SVG.selectAll("mylabels")
+                .data(keys)
+                .enter()
+                .append("text")
+                .attr("x", 70)
+                // 100 is where the first dot appears. 25 is the distance between dots
+                .attr("y", function(d,i){ return 100 + i*20})
+                .attr("class", "legend_text")
+                .style("fill", "white")
+                //.style("fill", function(d){ return color(d)})
+                .text(function(d){ return d})
+                .attr("text-anchor", "left")
+                .style("alignment-baseline", "middle");
+
+            });
+        //});
+
+        
+        </script>
+    </body>
+</html>
